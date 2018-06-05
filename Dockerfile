@@ -3,6 +3,7 @@ LABEL author='renothing' role='smtp server' tags='haraka,smtp server' descriptio
 #set language enviroments
 ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     TIMEZONE="Asia/Shanghai" \
+    PORT=587 \
     DATADIR=/data \
     DOMAIN="yourdomain.com" \
     HEADER="Haraka Server" \

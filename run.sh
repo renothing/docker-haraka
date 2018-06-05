@@ -19,17 +19,18 @@ if [[ ! -d  "${DATADIR}/config" ]];then
   #enable tls,spf,dkim and auth_flat_file
   sed 's/^#spf/spf/g' -i ${DATADIR}/config/plugins
   sed 's/^#dkim_sign/dkim_sign/g' -i ${DATADIR}/config/plugins
-  echo "tls" >> ${DATADIR}/config/plugins
-  echo "auth/flat_file" >> ${DATADIR}/config/plugins
-  echo "listen=[::0]:587" >> ${DATADIR}/config/smtp.ini
+  echo "listen=[::0]:${PORT}" >> ${DATADIR}/config/smtp.ini
   echo "nodes=cpus" >> ${DATADIR}/config/smtp.ini
   #add tls.ini
+  if [ ! -z "$TLS_KEY" ];then
+  echo "tls" >> ${DATADIR}/config/plugins
   cat << EOF >> ${DATADIR}/config/tls.ini
 key=${TLS_KEY}
 cert=${TLS_CERT}
 dhparam=${DATADIR}/config/dhparam.pem
 secureProtocol=TLSv1_2_method
 EOF
+fi
   #enable dkim sign
   cd ${DATADIR}/config/dkim/
   sh dkim_key_gen.sh $DOMAIN
@@ -39,7 +40,7 @@ EOF
 disabled = false
 selector = $selector
 domain=$DOMAIN
-dkim.private.key=${DATADIR}/config/${DOMAIN}/private
+dkim.private.key=${DATADIR}/config/dkim/${DOMAIN}/private
 EOF
   #enable outbound
   cat << EOF >> ${DATADIR}/config/outbound.ini
@@ -54,12 +55,13 @@ EOF
 context=myself  
 EOF
   #add auth_flat_file
-tmppass=`openssl rand -base64 12`
+  echo "auth/flat_file" >> ${DATADIR}/config/plugins
+  tmppass=`openssl rand -base64 12`
   cat << EOF >> ${DATADIR}/config/auth_flat_file.ini
 [core]
 methods=PLAIN,LOGIN,CRAM-MD5
 [users]
-tester@${DOMAIN}=$tmppass
+admin@${DOMAIN}=$tmppass
 EOF
 fi
 haraka -c ${DATADIR}

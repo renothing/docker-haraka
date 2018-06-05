@@ -23,6 +23,7 @@ This repository contains **Dockerfile** of [Haraka](http://haraka.github.io) for
 ```
     TIMEZONE="Asia/Shanghai"
     DATADIR=/data 
+    PORT="port to listen on "
     DOMAIN="yourdomain.com"
     HEADER="Haraka Server" 
     TLS_KEY="your domain ssl key file" 
