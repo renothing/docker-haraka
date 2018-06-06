@@ -14,7 +14,7 @@ if [[ ! -d  "${DATADIR}/config" ]];then
   echo "$DOMAIN" > ${DATADIR}/config/me
   echo 0 > ${DATADIR}/config/strict_rfc1869
   sed 's/^#toobusy/toobusy/g' -i ${DATADIR}/config/plugins
- #sed 's/^dnsbl/#dnsbl/g' -i ${DATADIR}/config/plugins
+  echo "record_envelope_addresses" >> ${DATADIR}/config/plugins
   sed 's/^queue\/smtp_forward/#queue\/smtp_forward/g' -i ${DATADIR}/config/plugins
   #enable tls,spf,dkim and auth_flat_file
   sed 's/^#spf/spf/g' -i ${DATADIR}/config/plugins
@@ -28,7 +28,6 @@ if [[ ! -d  "${DATADIR}/config" ]];then
 key=${TLS_KEY}
 cert=${TLS_CERT}
 dhparam=${DATADIR}/config/dhparam.pem
-secureProtocol=TLSv1_2_method
 EOF
 fi
   #enable dkim sign
@@ -54,6 +53,19 @@ EOF
 [relay]
 context=myself  
 EOF
+#enable data.header check
+  cat << EOF >> ${DATADIR}/config/data.headers.ini
+[check]
+duplicate_singular=true
+missing_required=true
+invalid_return_path=true
+invalid_date=true
+user_agent=true
+direct_to_mx=true
+from_match=true
+mailing_list=true
+EOF
+
   #add auth_flat_file
   echo "auth/flat_file" >> ${DATADIR}/config/plugins
   tmppass=`openssl rand -base64 12`
