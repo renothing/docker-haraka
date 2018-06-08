@@ -1,0 +1,47 @@
+version: '3' 
+
+services:
+  haraka:
+    build:
+      context: .
+    labels:
+      com.techyou.description: "Haraka smtp server"
+      com.techyou.app: "haraka"
+
+    image: renothing/haraka
+    container_name: haraka
+    restart: always
+    network_mode: "host"
+    ports:
+      - "587:587/tcp"
+    environment:
+      TIMEZONE: "Asia/Shanghai"
+      PORT: 587 
+      DATADIR: "/data"
+      DOMAIN: yourdomain.com
+      HEADER: "Haraka Server"
+      TLS_KEY: ""
+      TLS_CERT: "" 
+
+    deploy:
+      mode: replicated
+      update_config:
+        parallelism: 2
+        delay: 10s
+        failure_action: rollback
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      labels:
+        app.address: "smtp.example.com"
+        app.port: "587"
+        app.tls: "on"
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
