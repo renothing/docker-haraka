@@ -76,4 +76,4 @@ methods=PLAIN,LOGIN,CRAM-MD5
 admin@${DOMAIN}=$tmppass
 EOF
 fi
-haraka -c ${DATADIR}
+exec haraka -c ${DATADIR}

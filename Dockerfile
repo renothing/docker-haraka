@@ -24,7 +24,7 @@ RUN apk upgrade --update && \
     npm install -g --unsafe-perm Haraka toobusy-js && \
 #  # Cleaning up
     apk del --purge -r .fetch-deps && \
-    apk add tzdata openssl && \
+    apk add tzdata openssl execline && \
     rm -rf /var/cache/apk/* /tmp/* ~/.pearrc && chmod 755 /run.sh
 #start scripts
 # Set Workdir
