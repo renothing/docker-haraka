@@ -3,7 +3,7 @@ LABEL author='renothing' role='smtp server' tags='haraka,smtp server' descriptio
 #set language enviroments
 ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     TIMEZONE="Asia/Shanghai" \
-    PORT=587 \
+    PORT=25 \
     DATADIR=/data \
     DOMAIN="yourdomain.com" \
     HEADER="Haraka Server" \
@@ -20,6 +20,8 @@ RUN apk upgrade --update && \
     gcc \
     make \
     python && \
+    addgroup -g 88 -S smtp && \
+    adduser -u 88 -D -S -G smtp -h /data smtp && \
 #install haraka
     npm install -g --unsafe-perm Haraka toobusy-js && \
 #  # Cleaning up

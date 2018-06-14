@@ -7,20 +7,23 @@
 #
 echo "${TIMEZONE}" > /etc/TZ 
 cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime 
+stat -c "%U" ${DATADIR}|grep -q smtp || chown -R smtp:smtp ${DATADIR}
 if [[ ! -d  "${DATADIR}/config" ]];then
   haraka -i ${DATADIR}
   openssl dhparam -out ${DATADIR}/config/dhparam.pem 2048
   echo "$DOMAIN" > ${DATADIR}/config/host_list
   echo "$DOMAIN" > ${DATADIR}/config/me
-  echo 0 > ${DATADIR}/config/strict_rfc1869
+  echo 1 > ${DATADIR}/config/strict_rfc1869
   sed 's/^#toobusy/toobusy/g' -i ${DATADIR}/config/plugins
   echo "record_envelope_addresses" >> ${DATADIR}/config/plugins
   sed 's/^queue\/smtp_forward/#queue\/smtp_forward/g' -i ${DATADIR}/config/plugins
+  echo "listen=[::0]:${PORT}" >> ${DATADIR}/config/smtp.ini
+  echo "user=smtp" >> ${DATADIR}/config/smtp.ini
+  echo "group=smtp" >> ${DATADIR}/config/smtp.ini
+  echo "nodes=cpus" >> ${DATADIR}/config/smtp.ini
   #enable tls,spf,dkim and auth_flat_file
   sed 's/^#spf/spf/g' -i ${DATADIR}/config/plugins
   sed 's/^#dkim_sign/dkim_sign/g' -i ${DATADIR}/config/plugins
-  echo "listen=[::0]:${PORT}" >> ${DATADIR}/config/smtp.ini
-  echo "nodes=cpus" >> ${DATADIR}/config/smtp.ini
   #add tls.ini
   if [ ! -z "$TLS_KEY" ];then
   echo "tls" >> ${DATADIR}/config/plugins
