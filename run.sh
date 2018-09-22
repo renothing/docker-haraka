@@ -21,6 +21,8 @@ if [[ ! -d  "${DATADIR}/config" ]];then
   echo "user=smtp" >> ${DATADIR}/config/smtp.ini
   echo "group=smtp" >> ${DATADIR}/config/smtp.ini
   echo "nodes=cpus" >> ${DATADIR}/config/smtp.ini
+  echo "true" > ${DATADIR}/config/header_hide_version
+  echo "$HEADER" > ${DATADIR}/config/ehlo_hello_message
   #enable tls,spf,dkim and auth_flat_file
   sed 's/^#spf/spf/g' -i ${DATADIR}/config/plugins
   sed 's/^#dkim_sign/dkim_sign/g' -i ${DATADIR}/config/plugins
@@ -50,6 +52,13 @@ enable_tls = true
 relaying = true
 ipv6_enabled = true
 received_header = ${HEADER}
+received_header_disabled=true
+EOF
+#enable log
+  cat << EOF >> ${DATADIR}/config/log.ini
+loglevel=${LOGLEVEL}
+timestamps=false
+format=logfmt
 EOF
 #enable spf
   cat << EOF >> ${DATADIR}/config/spf.ini
@@ -67,6 +76,10 @@ user_agent=true
 direct_to_mx=true
 from_match=true
 mailing_list=true
+delivered_to=true
+[reject]
+missing_required=true
+invalid_date=true
 EOF
 
   #add auth_flat_file
