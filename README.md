@@ -19,24 +19,28 @@ This repository contains **Dockerfile** of [Haraka](http://haraka.github.io) for
 
 3. default environments supported,you can change them before building or running.   
    the container start with port 587 with ssl enabled
-   use volume to save your data
 ```
     TIMEZONE="Asia/Shanghai"
     DATADIR=/data 
     PORT="port to listen on "
-    DOMAIN="yourdomain.com"
+    DOMAIN="yourdomain.com" #your mx record domain here
     HEADER="Haraka Server" 
     TLS_KEY="your domain ssl key file" 
     TLS_CERT="your domain ssl cert file"
+    AUTOTLS=0
+    EMAIL="youremail@email.com"
+    TLSDOMAIN="tlsdomain.com tls2domain.com" #your connection hostdomain,split by black, support wildcard
 ```
+   note: please make sure your tlsdomain record correct before running when you enable autotls.
 ### Usage
 
+use volume to save your data
 ```
 docker run -dit --name haraka --network host --env-file /data/haraka/env -v /data/haraka:/data renothing/harak
 ```
 
 #### users and auth
-first user generated at /data/config/auth_flat_file.ini, you can add more users append it. 
+first user generated at `/data/config/auth_flat_file.ini`, you can add more users append it. 
 for example: 
 ```
 [users]
@@ -47,7 +51,8 @@ user2@yourdomain.com=9sa1asda.F.s
 ```
 
 #### TLS and DKIM signatures
-the server DKIM signatures saved at /data/config/dkim/yourdomain.com, please add its records in your own dns. 
+the server DKIM signatures saved at `/data/config/dkim/yourdomain.com`, please add its records in your own dns. 
 ref: 
 * http://haraka.github.io/manual/plugins/dkim_sign.html
 * http://haraka.github.io/manual/plugins/tls.html
+* https://github.com/xenolf/lego

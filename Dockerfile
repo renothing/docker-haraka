@@ -3,13 +3,16 @@ LABEL author='renothing' role='smtp server' tags='haraka,smtp server' descriptio
 #set language enviroments
 ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     TIMEZONE="Asia/Shanghai" \
-    PORT=25 \
+    PORT=587 \
     LOGLEVEL=warn \
     DATADIR=/data \
     DOMAIN="yourdomain.com" \
     HEADER="Haraka Server" \
     TLS_KEY="" \
-    TLS_CERT="" 
+    TLS_CERT="" \
+    AUTOTLS=0 \
+    EMAIL="youremail@email.com" \
+    TLSDOMAIN="tlsdomain.com tls2domain.com"
 #install software
 COPY run.sh /
 #RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g;s/http/https/g' /etc/apk/repositories && apk upgrade --update && \ 
@@ -27,9 +30,10 @@ RUN apk upgrade --update && \
     npm install -g --unsafe-perm Haraka toobusy-js && \
 #  # Cleaning up
     apk del --purge -r .fetch-deps && \
-    apk add tzdata openssl execline && \
+    apk add --no-cache tzdata openssl execline ca-certificates && \
     rm -rf /var/cache/apk/* /tmp/* ~/.pearrc && chmod 755 /run.sh
 #start scripts
+COPY --from=xenolf/lego /usr/bin/lego /usr/bin/lego
 # Set Workdir
 # Expose volumes
 #VOLUME ["/var/www"]
