@@ -94,29 +94,29 @@ if [[ ! -d  "${DATADIR}/config" ]];then
 fi
 #request tls certificates from letsencrypt
 if [ "${AUTOTLS}" -eq 1 ] && [ ! -z "$TLSDOMAIN" ];then
-  args="-a -m ${EMAIL} -k rsa4096 --path ${DATADIR}/lego/ --exclude http-01 --exclude dns-01 --tls :${PORT} --dns-resolvers 8.8.8.8"
+  args="-a -m ${EMAIL} -k rsa4096 --path ${DATADIR}/lego/ --tls --tls.port :${PORT} --dns.resolvers 8.8.8.8"
   for d in ${TLSDOMAIN};do
     args="$args -d ${d}"
   done
-  lego $args run
   pd=$(echo "$TLSDOMAIN"|awk '{print $1}')
   TLS_KEY=${DATADIR}/lego/certificates/${pd}.key
   TLS_CERT=${DATADIR}/lego/certificates/${pd}.crt
-  #generate letscrypt renew job
-  jobcmd="lego "$args" renew --days 10 --reuse-key"
-  echo "*/5 * * * * $jobcmd >> /dev/null"|crontab -
-  crond -b -L ${DATADIR}/cron.log
-fi
-#eable tls
-if [ -f $TLS_KEY ] && [ -f $TLS_CERT ];then
-  grep -q "^tls$\?" ${DATADIR}/config/plugins || sed -i "s/^#\s*tls/tls/" >> ${DATADIR}/config/plugins
-  grep -q "^enable_tls" ${DATADIR}/config/outbound.ini || echo "enable_tls = true" > ${DATADIR}/config/outbound.ini
-  test -f ${DATADIR}/config/dhparam.pem || openssl dhparam -out ${DATADIR}/config/dhparam.pem 2048
-  test -f ${DATADIR}/config/tls.ini || cat <<-EOF > ${DATADIR}/config/tls.ini
+  #eable tls
+  if [ -f $TLS_KEY ] && [ -f $TLS_CERT ];then
+    lego $args run
+    grep -q "^tls$\?" ${DATADIR}/config/plugins || sed -i "s/^#\s*tls/tls/" >> ${DATADIR}/config/plugins
+    grep -q "^enable_tls" ${DATADIR}/config/outbound.ini || echo "enable_tls = true" > ${DATADIR}/config/outbound.ini
+    test -f ${DATADIR}/config/dhparam.pem || openssl dhparam -out ${DATADIR}/config/dhparam.pem 2048
+    test -f ${DATADIR}/config/tls.ini || cat <<-EOF > ${DATADIR}/config/tls.ini
 	key=${TLS_KEY}
 	cert=${TLS_CERT}
 	dhparam=${DATADIR}/config/dhparam.pem
 	EOF
+  fi
+  #generate letscrypt renew job
+  jobcmd="lego "$args" renew --days 10 --reuse-key"
+  echo "2 */2 * * * $jobcmd >> /dev/null"|crontab -
+  crond -b -L ${DATADIR}/cron.log
 fi
 #start haraka
 stat -c "%U" ${DATADIR}|grep -q smtp || chown -R smtp:smtp ${DATADIR}
